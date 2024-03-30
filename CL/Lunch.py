@@ -1,18 +1,19 @@
 import streamlit as st
-import PyPDF2
+import pdfplumber
 
 # Path to the PDF file
-PDF_FILE_PATH = r"C:\Users\Vsing\PycharmProjects\Coppell Lunch\Lunch - Sheet1.pdf"
+PDF_FILE_PATH = "Lunch - Sheet1.pdf"
 
 # Read PDF file and extract text
-try:
-    with open(PDF_FILE_PATH, "rb") as pdf_file:
-        pdf_reader = PyPDF2.PdfReader(pdf_file)
-        text = ""
-        for page_num in range(len(pdf_reader.pages)):
-            text += pdf_reader.pages[page_num].extract_text()
-except Exception as e:
-    st.error(f"Failed to read PDF file: {e}")
+def read_pdf_file(pdf_file_path):
+    try:
+        with pdfplumber.open(pdf_file_path) as pdf:
+            text = ""
+            for page in pdf.pages:
+                text += page.extract_text()
+        return text
+    except Exception as e:
+        st.error(f"Failed to read PDF file: {e}")
 
 # Process student information
 def process_student_information(text):
@@ -45,6 +46,9 @@ st.set_page_config(page_title="Student Lunch Type Lookup", page_icon=":fork_and_
 # Title
 st.title("Student Lunch Type Lookup")
 
+# Read PDF file and extract text
+text = read_pdf_file(PDF_FILE_PATH)
+
 # Process student information
 student_data = process_student_information(text)
 
@@ -62,11 +66,11 @@ st.markdown(
 )
 
 # Student ID entry
-student_id = st.text_input("Student ID", key="student_id")
+student_id = st.text_input("Student ID")
 
 # Student Name entry
-student_name = st.text_input("Name", key="student_name")
+student_name = st.text_input("Name")
 
 # Button for student to submit
-if st.button("Submit", key="submit_button"):
+if st.button("Submit"):
     student_submit(student_data, student_id, student_name)
